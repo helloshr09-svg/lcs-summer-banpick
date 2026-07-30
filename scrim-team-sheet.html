@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 LCS SUMMER 협곡대회 — 선수 정보 시트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e16;
+    --bg-2:#0d1220;
+    --panel:#131a28;
+    --panel-2:#1b2436;
+    --line: rgba(200,170,110,0.22);
+    --gold:#c8aa6e;
+    --gold-bright:#f0c766;
+    --parchment:#f5ecd9;
+    --muted:#aab4c8;
+    --void:#8b5cf6;
+    --piltover:#e8a93b;
+    --zaun:#3ecf6e;
+    --radius:10px;
+    --t-unranked:#5a6376;
+    --t-gold:#d8a13c;
+    --t-platinum:#3fc7b8;
+    --t-emerald:#2fae6e;
+    --t-diamond:#5b8def;
+    --t-master:#b565e8;
+    --t-gm:#e0554f;
+    --t-challenger:#f0c766;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: radial-gradient(ellipse at top, rgba(200,170,110,0.07), transparent 60%), var(--bg);
+    color:var(--parchment);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  header.top{
+    padding:26px 20px 16px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(200,170,110,0.06), transparent);
+  }
+  header.top h1{
+    font-family:'Orbitron',sans-serif; font-weight:800; font-size:22px; letter-spacing:0.5px;
+    margin:0 0 6px; color:var(--gold-bright);
+  }
+  header.top p{margin:0; color:var(--muted); font-size:13px;}
+
+  main{max-width:1180px; margin:0 auto; padding:20px;}
+
+  .stat-row{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:18px;}
+  .stat-chip{
+    background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:8px 16px;
+    font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:6px;
+  }
+  .stat-chip b{color:var(--gold-bright); font-family:'JetBrains Mono',monospace; font-size:14px;}
+
+  .tier-legend{
+    text-align:center; font-size:11.5px; color:var(--muted); margin-bottom:16px; line-height:1.6;
+  }
+  .tier-legend b{color:var(--gold-bright); font-weight:700;}
+
+  .controls{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px; margin-bottom:16px; display:flex; flex-direction:column; gap:12px;
+  }
+  .controls input.search{
+    width:100%; padding:11px 14px; border-radius:8px; border:1px solid var(--line);
+    background:var(--bg-2); color:var(--parchment); font-size:15px;
+  }
+  .controls input.search::placeholder{color:var(--muted);}
+  .chip-row{display:flex; gap:7px; flex-wrap:wrap; align-items:center;}
+  .chip-row .label{font-size:11.5px; color:var(--muted); margin-right:2px;}
+  .filter-chip{
+    padding:6px 13px; border-radius:16px; border:1px solid var(--line); background:var(--bg-2);
+    color:var(--muted); font-size:12.5px; font-weight:600; cursor:pointer; transition:all .12s ease;
+    user-select:none;
+  }
+  .filter-chip:hover{border-color:var(--gold);}
+  .filter-chip.active{background:var(--gold-bright); color:#1a1410; border-color:var(--gold-bright);}
+  .filter-chip[data-group="공허"].active{background:var(--void); color:#fff; border-color:var(--void);}
+  .filter-chip[data-group="필트오버"].active{background:var(--piltover); color:#1a1410; border-color:var(--piltover);}
+  .filter-chip[data-group="자운"].active{background:var(--zaun); color:#08160e; border-color:var(--zaun);}
+
+  .view-toggle{display:flex; gap:6px;}
+  .view-toggle button{
+    flex:1; padding:9px; border-radius:8px; border:1px solid var(--line); background:var(--bg-2);
+    color:var(--muted); font-size:13px; font-weight:700; cursor:pointer; font-family:'Orbitron',sans-serif; letter-spacing:0.3px;
+  }
+  .view-toggle button.active{background:var(--gold-bright); color:#1a1410; border-color:var(--gold-bright);}
+
+  /* ---- 티어 배지 ---- */
+  .tier-badge{
+    display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:6px;
+    font-size:12px; font-weight:700; font-family:'JetBrains Mono',monospace; white-space:nowrap;
+  }
+  .tier-dot{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+  .tier-unranked{background:rgba(90,99,118,0.18); color:#9aa3b5;}
+  .tier-unranked .tier-dot{background:#5a6376;}
+  .tier-gold{background:rgba(216,161,60,0.15); color:var(--t-gold);}
+  .tier-gold .tier-dot{background:var(--t-gold);}
+  .tier-platinum{background:rgba(63,199,184,0.15); color:var(--t-platinum);}
+  .tier-platinum .tier-dot{background:var(--t-platinum);}
+  .tier-emerald{background:rgba(47,174,110,0.18); color:var(--t-emerald);}
+  .tier-emerald .tier-dot{background:var(--t-emerald);}
+  .tier-diamond{background:rgba(91,141,239,0.18); color:var(--t-diamond);}
+  .tier-diamond .tier-dot{background:var(--t-diamond);}
+  .tier-master{background:rgba(181,101,232,0.18); color:var(--t-master);}
+  .tier-master .tier-dot{background:var(--t-master);}
+  .tier-gm{background:rgba(224,85,79,0.18); color:var(--t-gm);}
+  .tier-gm .tier-dot{background:var(--t-gm);}
+  .tier-challenger{
+    background:linear-gradient(90deg, rgba(240,199,102,0.25), rgba(126,232,224,0.25));
+    color:var(--t-challenger); box-shadow:0 0 0 1px rgba(240,199,102,0.4) inset;
+  }
+  .tier-challenger .tier-dot{background:linear-gradient(90deg,#f0c766,#7ee8e0);}
+
+  /* ---- 팀별 카드 뷰 (기본) ---- */
+  .team-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr)); gap:14px;}
+  .team-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:14px;
+  }
+  .team-card h3{
+    margin:0 0 10px; font-family:'Orbitron',sans-serif; font-size:14px; display:flex; align-items:center; gap:8px;
+  }
+  .team-card h3 .group-dot{width:9px; height:9px;}
+  .p-row{
+    display:flex; align-items:flex-start; gap:8px; padding:8px 0; border-top:1px solid rgba(200,170,110,0.08);
+  }
+  .p-row:first-of-type{border-top:none;}
+  .p-row .r{
+    width:34px; flex-shrink:0; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; color:var(--gold-bright);
+    padding-top:2px;
+  }
+  .p-row .info{flex:1; min-width:0;}
+  .p-row .name-line{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:3px;}
+  .p-row .pname{font-weight:700; font-family:'JetBrains Mono',monospace; font-size:13px;}
+  .captain-badge{
+    font-size:9.5px; font-weight:800; color:#1a1410; background:var(--gold-bright); padding:1px 6px; border-radius:8px;
+    letter-spacing:0.3px; font-family:'Orbitron',sans-serif;
+  }
+  .p-row .champs{font-size:12px; color:var(--parchment); opacity:0.8; margin-bottom:3px;}
+  .p-row .notes{font-size:11px; color:var(--muted); line-height:1.5;}
+  .p-row.dim{opacity:0.28;}
+  .tier-pair{display:flex; gap:5px; flex-wrap:wrap; margin-bottom:4px;}
+
+  /* ---- 전체 목록(정렬) 뷰 ---- */
+  .sheet{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
+  table{width:100%; border-collapse:collapse;}
+  thead th{
+    position:sticky; top:0; background:var(--panel-2); color:var(--gold-bright);
+    font-family:'Orbitron',sans-serif; font-size:11px; letter-spacing:0.5px; text-transform:uppercase;
+    padding:12px 10px; text-align:left; border-bottom:1px solid var(--line); cursor:pointer; white-space:nowrap;
+  }
+  thead th:hover{color:#fff;}
+  thead th.sort-active{color:#fff;}
+  thead th .arrow{font-size:9px; opacity:0.6; margin-left:3px;}
+  tbody tr{border-bottom:1px solid rgba(200,170,110,0.08);}
+  tbody tr:hover{background:rgba(200,170,110,0.05);}
+  tbody tr:last-child{border-bottom:none;}
+  tbody td{padding:11px 10px; font-size:13px; vertical-align:top;}
+  .group-dot{width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; vertical-align:middle;}
+  .group-dot.공허{background:var(--void);}
+  .group-dot.필트오버{background:var(--piltover);}
+  .group-dot.자운{background:var(--zaun);}
+  td.team-cell{color:var(--muted); font-size:12.5px;}
+  td.role-cell{font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--gold-bright); font-weight:700;}
+  td.name-cell{font-weight:700; color:var(--parchment); font-family:'JetBrains Mono',monospace; font-size:13px;}
+  td.champ-cell{color:var(--parchment); opacity:0.85; font-size:12.5px; max-width:220px;}
+  td.notes-cell{color:var(--muted); font-size:11.5px; line-height:1.5; max-width:280px;}
+  .empty-msg{padding:40px; text-align:center; color:var(--muted); font-size:13px;}
+
+  @media (max-width:760px){
+    main{padding:12px;}
+    .team-grid{grid-template-columns:1fr;}
+    thead{display:none;}
+    table, tbody, tr, td{display:block; width:100%;}
+    tbody tr{background:var(--bg-2); border:1px solid var(--line); border-radius:8px; margin-bottom:10px; padding:12px;}
+    tbody td{padding:3px 0; font-size:13px;}
+    td.notes-cell, td.champ-cell{max-width:none;}
+    td::before{content: attr(data-label); display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:2px; font-family:'Orbitron',sans-serif;}
+    td.name-cell{font-size:15px; padding-top:0;}
+    td.name-cell::before{display:none;}
+    .controls input.search{font-size:16px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>2026 LCS SUMMER 협곡대회</h1>
+  <p>선수 정보 시트 — 60명 전체 참고용 명단</p>
+</header>
+
+<main>
+  <div class="stat-row" id="statRow"></div>
+  <div class="tier-legend"><b>현재 티어</b>: 이번 시즌 솔로랭크 기준 (언랭인 경우 자유랭크를 괄호로 표시) &nbsp;·&nbsp; <b>최고 티어</b>: 솔로/자유랭크 통틀어 역대 최고 기록</div>
+
+  <div class="controls">
+    <div class="view-toggle">
+      <button id="viewTeamBtn">팀별 보기</button>
+      <button id="viewFlatBtn">전체 목록(정렬)</button>
+    </div>
+    <div class="chip-row" id="groupChips">
+      <span class="label">그룹</span>
+    </div>
+    <div class="chip-row" id="roleChips">
+      <span class="label">라인</span>
+    </div>
+  </div>
+
+  <div id="teamView" class="team-grid"></div>
+
+  <div id="flatView" class="sheet" style="display:none;">
+    <table>
+      <thead>
+        <tr>
+          <th data-sort="group">그룹</th>
+          <th data-sort="team">팀</th>
+          <th data-sort="roleOrder">라인</th>
+          <th data-sort="name">선수</th>
+          <th data-sort="tierRank">현재 티어</th>
+          <th data-sort="peakRank">최고 티어</th>
+          <th>모스트 챔피언</th>
+          <th>메모</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty-msg" id="emptyMsg" style="display:none;">조건에 맞는 선수가 없어요.</div>
+  </div>
+</main>
+
+<script>
+const PLAYERS = [{"group": "공허", "team": "카사느님#KR1 팀", "name": "카사느님#KR1", "role": "ADC", "roleLabel": "원딜", "champPool": "애쉬, 세나, 징크스, 시비르, 이즈리얼", "tier": "에메랄드", "peakTier": "다이아", "notes": "이번 시즌(S2026) 실전 기준 모스트 / 통산 숙련도는 징크스·이즈리얼 상위 / 솔로랭크 에메2 8승9패(47%) / 포지션 AD딜러 91%"}, {"group": "공허", "team": "카사느님#KR1 팀", "name": "인생은이호준처럼#KR1", "role": "TOP", "roleLabel": "탑", "champPool": "클레드, 럼블, 모데카이저, 쉬바나", "tier": "다이아", "peakTier": "다이아", "notes": "솔로랭크 다이아4 30승33패(48%) / 포지션 탑 97%, 클레드 마스터리 압도적 1위"}, {"group": "공허", "team": "카사느님#KR1 팀", "name": "멋잼이#LCS", "role": "JGL", "roleLabel": "정글", "champPool": "브라이어, 샤코, 우디르, 녹턴", "tier": "다이아", "peakTier": "마스터", "notes": "솔로랭크 다이아1 62승53패(54%) / 포지션 정글 98%"}, {"group": "공허", "team": "카사느님#KR1 팀", "name": "각도가생명#KR1", "role": "MID", "roleLabel": "미드", "champPool": "리 신, 르블랑, 야스오, 엘리스", "tier": "", "peakTier": "플래티넘", "notes": "이번 시즌 솔로랭크 언랭(배치 전) / 과거 시즌 최고 플래티넘"}, {"group": "공허", "team": "카사느님#KR1 팀", "name": "발빠른다람쥐의꿈#KR2", "role": "SUP", "roleLabel": "서폿", "champPool": "쓰레쉬, 자이라, 파이크, 유미, 카르마", "tier": "다이아", "peakTier": "다이아", "notes": "최근 픽 위주(쓰레쉬,자이라,파이크) / 통산 모스트는 룰루·소나 / 솔로랭크 다이아4 132승142패(48%) / 자유랭크 최고 그랜드마스터"}, {"group": "공허", "team": "고토 야호#GTM 팀", "name": "고토 야호#GTM", "role": "ADC", "roleLabel": "원딜", "champPool": "유나라, 세라핀, 갈리오, 칼리스타, 루시안, 트리스타나", "tier": "다이아", "peakTier": "다이아", "notes": "최근 픽 위주(유나라,세라핀 자주 픽) / 통산 모스트는 칼리스타·진 / 솔로랭크 다이아4 502승498패(50%, 통산 1000판) / 포지션 AD딜러 71%"}, {"group": "공허", "team": "고토 야호#GTM 팀", "name": "N0CH4T#KR1", "role": "TOP", "roleLabel": "탑", "champPool": "아트록스, 럼블, 제이스, 크산테, 암베사", "tier": "에메랄드", "peakTier": "다이아", "notes": "솔로랭크 에메4 5승7패(42%) / 포지션 탑 58%"}, {"group": "공허", "team": "고토 야호#GTM 팀", "name": "카타리나 고인#1234", "role": "JGL", "roleLabel": "정글", "champPool": "신 짜오, 리 신, 그웬, 렉사이, 자르반 4세", "tier": "다이아", "peakTier": "마스터", "notes": "솔로랭크 다이아3 57승66패(46%) / 포지션 정글 83%"}, {"group": "공허", "team": "고토 야호#GTM 팀", "name": "코딩하러갑니다#KR1", "role": "MID", "roleLabel": "미드", "champPool": "흐웨이, 사일러스, 애니비아, 마오카이, 니코", "tier": "에메랄드", "peakTier": "다이아", "notes": "솔로랭크 에메4 112승92패(55%) / 포지션 AP딜러 75%(미드)"}, {"group": "공허", "team": "고토 야호#GTM 팀", "name": "버스가 체질#KR1", "role": "SUP", "roleLabel": "서폿", "champPool": "니코, 세라핀, 노틸러스, 레오나, 브라움", "tier": "골드", "peakTier": "골드", "notes": "솔로랭크 골드3 71승57패(55%) / 포지션 서폿 100%"}, {"group": "공허", "team": "대학원생 원딜#KR1 팀", "name": "대학원생 원딜#KR1", "role": "ADC", "roleLabel": "원딜", "champPool": "베인, 이즈리얼, 루시안, 케이틀린", "tier": "", "peakTier": "그랜드마스터", "notes": "이번 시즌 솔로랭크 언랭(배치 전) / 자유랭크 다이아2 17승15패(53%), 최고 그랜드마스터 / 포지션 원딜 88%"}, {"group": "공허", "team": "대학원생 원딜#KR1 팀", "name": "6 월#0624", "role": "TOP", "roleLabel": "탑", "champPool": "세트, 문도 박사, 다리우스, 요네, 볼리베어", "tier": "다이아", "peakTier": "다이아", "notes": "솔로랭크 다이아4 22승28패(44%) / 포지션 탑 92%"}, {"group": "공허", "team": "대학원생 원딜#KR1 팀", "name": "와구카운터#아프지", "role": "JGL", "roleLabel": "정글", "champPool": "니달리, 사일러스, 나피리, 바이, 리 신", "tier": "그랜드마스터", "peakTier": "그랜드마스터", "notes": "솔로랭크 그마 1478LP 270승193패(58%, 통산 460+게임) / 포지션 정글 88% / 니달리 원챔급"}, {"group": "공허", "team": "대학원생 원딜#KR1 팀", "name": "도지이더리움#KR1", "role": "MID", "roleLabel": "미드", "champPool": "요네, 흐웨이, 스몰더, 빅토르, 스웨인", "tier": "플래티넘", "peakTier": "플래티넘", "notes": "솔로랭크 플래4 81승85패(49%) / 포지션 미드 61%, 정글 27%(투 포지션)"}, {"group": "공허", "team": "대학원생 원딜#KR1 팀", "name": "조약불#KR1", "role": "SUP", "roleLabel": "서폿", "champPool": "쓰레쉬, 직스, 카이사, 케이틀린, 시비르", "tier": "에메랄드", "peakTier": "다이아", "notes": "솔로랭크 에메4 13승9패(59%) / 포지션 서폿 53%, 원딜 45%(투 포지션)"}, {"group": "공허", "team": "H2SO4#CCSS 팀", "name": "H2SO4#CCSS", "role": "ADC", "roleLabel": "원딜", "champPool": "스몰더, 트위치, 세나, 벨베스, 애쉬", "tier": "에메랄드", "peakTier": "다이아", "notes": "솔로랭크 에메4 164승155패(51%, 통산 400+게임) / 포지션 혼합(AD딜러38%, AP딜러42%)"}, {"group": "공허", "team": "H2SO4#CCSS 팀", "name": "닌자 망치 곰 돌#KR1", "role": "TOP", "roleLabel": "탑", "champPool": "아트록스, 쉔, 노틸러스, 나르, 탐 켄치", "tier": "다이아", "peakTier": "마스터", "notes": "솔로랭크 다이아3 5승2패(71%, 이번 시즌 13게임뿐) / 통산 여러 시즌 마스터 찍음 / 포지션 탑 85%"}, {"group": "공허", "team": "H2SO4#CCSS 팀", "name": "ZIST#KR1", "role": "JGL", "roleLabel": "정글", "champPool": "쓰레쉬, 블리츠크랭크, 노틸러스, 올라프, 브라움", "tier": "다이아", "peakTier": "다이아", "notes": "솔로랭크 다이아4 81승89패(48%) / 포지션 서폿 68%(정글보다 서폿 위주 계정)"}, {"group": "공허", "team": "H2SO4#CCSS 팀", "name": "정택이꺼#KR1", "role": "MID", "roleLabel": "미드", "champPool": "사일러스, 아칼리, 르블랑, 멜, 다이애나", "tier": "에메랄드", "peakTier": "마스터", "notes": "솔로랭크 에메1 7승17패(29%, 최근 슬럼프) / 통산 최고 마스터 / 포지션 미드 84%"}, {"group": "공허", "team": "H2SO4#CCSS 팀", "name": "늙고나약한김덕규#3030", "role": "SUP", "roleLabel": "서폿", "champPool": "갈리오, 카밀, 노틸러스, 레오나, 뽀삐", "tier": "다이아", "peakTier": "마스터", "notes": "솔로랭크 다이아2 60승58패(51%) / 포지션 서폿 91%, 최근 20게임 승률 70%"}, {"group": "필트오버", "team": "BIBIBIBIBI#KR1 팀", "name": "BIBIBIBIBI#KR1", "role": "ADC", "roleLabel": "원딜", "champPool": "세나, 스몰더, 이즈리얼, 루시안, 아리", "tier": "에메랄드", "peakTier": "마스터", "notes": "솔로랭크 에메1 4승5패(44%) / 통산 여러 시즌 마스터 / 포지션 원딜 90%"}, {"group": "필트오버", "team": "BIBIBIBIBI#KR1 팀", "name": "동백꽃의 꽃말#KR1", "role": "TOP", "roleLabel": "탑", "champPool": "아트록스, 잭스, 리 신, 사이온, 제드", "tier": "에메랄드", "peakTier": "다이아", "notes": "솔로랭크 에메3 14승13패(52%) / 포지션 탑 61%, 미드 22%(투 포지션)"}, {"group": "필트오버", "team": "BIBIBIBIBI#KR1 팀", "name": "heyesir38#KR2", "role": "JGL", "roleLabel": "정글", "champPool": "바이, 오공, 신 짜오, 판테온, 샤코", "tier": "다이아", "peakTier": "마스터", "notes": "솔로랭크 다이아1 211승182패(54%, 통산 500+게임) / 포지션 정글 93% / 샤코 원챔급"}, {"group": "필트오버", "team": "BIBIBIBIBI#KR1 팀", "name": "쫑 쨉#KR1", "role": "MID", "roleLabel": "미드", "champPool": "라이즈, 아칼리, 사일러스, 빅토르, 스몰더", "tier": "플래티넘", "peakTier": "플래티넘", "notes": "솔로랭크 플래2 71승76패(48%) / 포지션 미드 92%"}, {"group": "필트오버", "team": "BIBIBIBIBI#KR1 팀", "name": "ID옥미#KR2", "role": "SUP", "roleLabel": "서폿", "champPool": "피들스틱, 다리우스, 바루스, 사이온, 말파이트", "tier": "에메랄드", "peakTier": "에메랄드", "notes": "솔로랭크 에메1 138승125패(52%) / 포지션 탑 58%, 서폿 31%(팀에선 서폿이지만 솔랭은 탑 위주)"}, {"group": "필트오버", "team": "힁 꿀#KR1 팀", "name": "힁 꿀#KR1", "role": "ADC", "roleLabel": "원딜", "champPool": "진, 케이틀린, 블리츠크랭크, 사미라, 카이사", "tier": "에메랄드", "peakTier": "에메랄드", "notes": "솔로랭크 에메4 69승71패(49%) / 포지션 원딜 74%"}, {"group": "필트오버", "team": "힁 꿀#KR1 팀", "name": "동전교환기#KR1", "role": "TOP", "roleLabel": "탑", "champPool": "럼블, 나르, 요릭, 암베사, 그웬", "tier": "에메랄드", "peakTier": "다이아", "notes": "솔로랭크 에메1 172승165패(51%, 통산 350+게임) / 포지션 탑 95%"}, {"group": "필트오버", "team": "힁 꿀#KR1 팀", "name": "동주견#KR1", "role": "JGL", "roleLabel": "정글", "champPool": "제이스, 에코, 벨베스, 릴리아, 킨드레드", "tier": "에메랄드", "peakTier": "다이아", "notes": "솔로랭크 에메1 25승12패(68%) / 포지션 정글 96%"}, {"group": "필트오버", "team": "힁 꿀#KR1 팀", "name": "정하권#KR1", "role": "MID", "roleLabel": "미드", "champPool": "오리아나, 아리, 벡스, 카타리나, 리 신", "tier": "다이아", "peakTier": "마스터", "notes": "솔로랭크 다이아1 66승79패(46%) / 포지션 미드 75% / 카타리나 마스터리 압도적"}, {"group": "필트오버", "team": "힁 꿀#KR1 팀", "name": "드러눕습니다#사실아님", "role": "SUP", "roleLabel": "서폿", "champPool": "판테온, 블리츠크랭크, 쓰레쉬, 제라스, 브랜드", "tier": "플래티넘", "peakTier": "플래티넘", "notes": "솔로랭크 플래3 80승60패(57%) / 포지션 서폿 91%"}, {"group": "필트오버", "team": "승 완 왕 자#KR1 팀", "name": "승 완 왕 자#KR1", "role": "ADC", "roleLabel": "원딜", "champPool": "이즈리얼, 징크스, 케이틀린, 아펠리오스, 미스 포츈", "tier": "에메랄드", "peakTier": "다이아", "notes": "솔로랭크 에메2 66승73패(47%) / 포지션 원딜 74%"}, {"group": "필트오버", "team": "승 완 왕 자#KR1 팀", "name": "Nothing9#KR1", "role": "TOP", "roleLabel": "탑", "champPool": "말파이트, 피즈, 제드, 카타리나, 크산테", "tier": "골드", "peakTier": "플래티넘", "notes": "솔로랭크 골드2 47승61패(44%) / 팀 내 포지션은 탑 고정 (솔랭에선 미드도 병행)"}, {"group": "필트오버", "team": "승 완 왕 자#KR1 팀", "name": "반의 반의 반도#KR1", "role": "JGL", "roleLabel": "정글", "champPool": "릴리아, 녹턴, 나피리, 바이, 브랜드", "tier": "플래티넘", "peakTier": "플래티넘", "notes": "솔로랭크 플래1 41승31패(57%) / 포지션 정글 88%"}, {"group": "필트오버", "team": "승 완 왕 자#KR1 팀", "name": "호태장님#KR2", "role": "MID", "roleLabel": "미드", "champPool": "아리, 흐웨이, 오리아나, 벡스, 애니비아", "tier": "다이아", "peakTier": "마스터", "notes": "솔로랭크 다이아1 35승40패(47%) / 포지션 미드 94%"}, {"group": "필트오버", "team": "승 완 왕 자#KR1 팀", "name": "수면포기겜돌이#KR1", "role": "SUP", "roleLabel": "서폿", "champPool": "뽀삐, 파이크, 바드, 쓰레쉬, 니코", "tier": "다이아", "peakTier": "마스터", "notes": "솔로랭크 다이아4 10승5패(67%) / 포지션 서폿 100%"}, {"group": "필트오버", "team": "김펀치#GENG 팀", "name": "김펀치#GENG", "role": "ADC", "roleLabel": "원딜", "champPool": "아펠리오스, 유나라, 제이스, 나르, 징크스", "tier": "에메랄드", "peakTier": "그랜드마스터", "notes": "솔로랭크 에메3 23승13패(64%) / 포지션 원딜 52%"}, {"group": "필트오버", "team": "김펀치#GENG 팀", "name": "만번깍은피오라#KR2", "role": "TOP", "roleLabel": "탑", "champPool": "암베사, 피오라, 아트록스, 크산테, 잭스", "tier": "플래티넘", "peakTier": "플래티넘", "notes": "솔로랭크 플래2 132승143패(48%, 통산 400+게임) / 포지션 탑 81%"}, {"group": "필트오버", "team": "김펀치#GENG 팀", "name": "머 효#KR1", "role": "JGL", "roleLabel": "정글", "champPool": "라이즈, 아지르, 브랜드, 애니비아, 직스", "tier": "플래티넘", "peakTier": "플래티넘", "notes": "솔로랭크 플래4 9승7패(56%, 표본 적음) / 팀 내 포지션 정글 고정 (솔랭 챔프폭은 미드형)"}, {"group": "필트오버", "team": "김펀치#GENG 팀", "name": "종행교#1094", "role": "MID", "roleLabel": "미드", "champPool": "판테온, 케넨, 빅토르, 르블랑, 이즈리얼", "tier": "에메랄드", "peakTier": "다이아", "notes": "솔로랭크 에메1 18승20패(47%) / 포지션 미드 59% / 판테온 마스터리 압도적"}, {"group": "필트오버", "team": "김펀치#GENG 팀", "name": "상 현#2000", "role": "SUP", "roleLabel": "서폿", "champPool": "레오나, 브라움, 알리스타, 렐, 카르마", "tier": "다이아", "peakTier": "그랜드마스터", "notes": "솔로랭크 다이아1 234승236패(50%, 통산 480게임) / 포지션 서폿 99%"}, {"group": "자운", "team": "T1 ggyumayusi#KR1 팀", "name": "T1 ggyumayusi#KR1", "role": "ADC", "roleLabel": "원딜", "champPool": "징크스, 시비르, 바루스, 세나, 미스 포츈", "tier": "다이아", "peakTier": "마스터", "notes": "솔로랭크 다이아1 255승263패(49%, 통산 500+게임) / 포지션 원딜 66% / 최근 슬럼프(최근 20게임 35%)"}, {"group": "자운", "team": "T1 ggyumayusi#KR1 팀", "name": "문도킹#King", "role": "TOP", "roleLabel": "탑", "champPool": "문도 박사, 나서스, 레넥톤, 아트록스, 노틸러스", "tier": "다이아", "peakTier": "다이아", "notes": "솔로랭크 다이아4 261승252패(51%, 통산 670+게임) / 포지션 탑 94% / 문도 박사 원챔급(294승252패) / 최근 20게임 급슬럼프(20%)"}, {"group": "자운", "team": "T1 ggyumayusi#KR1 팀", "name": "규 닥#KR1", "role": "JGL", "roleLabel": "정글", "champPool": "자이라, 카직스, 벨베스, 그레이브즈, 나피리", "tier": "마스터", "peakTier": "그랜드마스터", "notes": "솔로랭크 마스터 710LP(상위 0.14%, 통산 470+게임, 솔랭 역대 최고도 마스터) / 자유랭크 통산 최고 그랜드마스터(S2024 시즌2, 216LP) / 포지션 정글 91% / 최근 20게임 승률 70%"}, {"group": "자운", "team": "T1 ggyumayusi#KR1 팀", "name": "르블갓#KR1", "role": "MID", "roleLabel": "미드", "champPool": "제드, 아크샨, 조이, 나피리, 아칼리", "tier": "다이아", "peakTier": "다이아", "notes": "솔로랭크 다이아4 98승93패(51%) / 포지션 미드 79%"}, {"group": "자운", "team": "T1 ggyumayusi#KR1 팀", "name": "하 랑#KR2", "role": "SUP", "roleLabel": "서폿", "champPool": "엘리스, 탐 켄치, 카밀, 잭스, 레오나", "tier": "에메랄드", "peakTier": "에메랄드", "notes": "솔로랭크 에메랄드 (통산 숙련도는 잔나·카밀·잭스가 상위) / 자유랭크 플래2 20승20패(50%)"}, {"group": "자운", "team": "하얀 시골 댕댕이#KR1 팀", "name": "하얀 시골 댕댕이#KR1", "role": "ADC", "roleLabel": "원딜", "champPool": "이즈리얼, 카이사, 빅토르, 레오나, 진", "tier": "다이아", "peakTier": "마스터", "notes": "솔로랭크 다이아1 104승85패(55%, 상위 1.05%) / 최고 마스터 436LP / 포지션 원딜 67%"}, {"group": "자운", "team": "하얀 시골 댕댕이#KR1 팀", "name": "밤톨이오라버니#KR1", "role": "TOP", "roleLabel": "탑", "champPool": "나르, 라이즈, 크산테, 아트록스, 그라가스", "tier": "플래티넘", "peakTier": "다이아", "notes": "솔로랭크 플래2 22승17패(56%) / 자유랭크 최고 다이아3 / 포지션 탑 78%"}, {"group": "자운", "team": "하얀 시골 댕댕이#KR1 팀", "name": "순대국같은남자#KR1", "role": "JGL", "roleLabel": "정글", "champPool": "자이라, 카르마, 신 짜오, 자르반 4세, 판테온", "tier": "에메랄드", "peakTier": "에메랄드", "notes": "솔로랭크 에메4 59승54패(52%) / 포지션 정글53%·서폿40% (팀 내 정글 고정)"}, {"group": "자운", "team": "하얀 시골 댕댕이#KR1 팀", "name": "기혀깅#KR1", "role": "MID", "roleLabel": "미드", "champPool": "니코, 애쉬, 아리, 시비르, 제리", "tier": "에메랄드", "peakTier": "마스터", "notes": "솔로랭크 에메2 121승131패(48%) / 최고 마스터(S2024) / 팀 내 미드 고정 (솔랭은 원딜·미드 병행, 최근엔 아리·아지르·르블랑 등 미드 위주)"}, {"group": "자운", "team": "하얀 시골 댕댕이#KR1 팀", "name": "화내면닉변함#KR1", "role": "SUP", "roleLabel": "서폿", "champPool": "노틸러스, 레오나, 마오카이, 룰루, 소나", "tier": "플래티넘", "peakTier": "에메랄드", "notes": "솔로랭크 플래3 13승7패(65%, 표본 적음) / 포지션 서폿 100%"}, {"group": "자운", "team": "초보서폿 강민지#KR1 팀", "name": "초보서폿 강민지#KR1", "role": "ADC", "roleLabel": "원딜", "champPool": "누누와 윌럼프, 징크스, 니달리, 오리아나", "tier": "다이아(자유랭크)", "peakTier": "다이아", "notes": "개인랭크 이번시즌 언랭크 / 자유랭크 다이아4 7승9패(44%, 표본 적음) / 포지션 정글44%·원딜44%"}, {"group": "자운", "team": "초보서폿 강민지#KR1 팀", "name": "귤선장#CCSS", "role": "TOP", "roleLabel": "탑", "champPool": "갱플랭크, 제이스, 드레이븐, 이즈리얼", "tier": "에메랄드", "peakTier": "에메랄드", "notes": "솔로랭크 에메4 16승19패(46%) / 포지션 탑 94%"}, {"group": "자운", "team": "초보서폿 강민지#KR1 팀", "name": "보 석#KR1", "role": "JGL", "roleLabel": "정글", "champPool": "바이, 사일러스, 암베사, 나피리, 자르반 4세", "tier": "에메랄드", "peakTier": "에메랄드", "notes": "솔로랭크 에메3 61승71패(46%) / 포지션 정글 94%"}, {"group": "자운", "team": "초보서폿 강민지#KR1 팀", "name": "헤롱헤롱쿨쿨방울#JMTZE", "role": "MID", "roleLabel": "미드", "champPool": "아칼리, 조이, 다이애나, 르블랑, 아리", "tier": "다이아", "peakTier": "다이아", "notes": "솔로랭크 다이아4 64승67패(49%) / 포지션 미드 96%"}, {"group": "자운", "team": "초보서폿 강민지#KR1 팀", "name": "폴바셋컵홀더도둑#0000", "role": "SUP", "roleLabel": "서폿", "champPool": "레오나, 룰루, 카르마, 세라핀, 세나", "tier": "마스터", "peakTier": "마스터", "notes": "솔로랭크 마스터 307LP(상위 0.45%, 통산 650+게임) / 레오나 마스터리 251(290만 포인트, 압도적 원챔) / 포지션 서폿 100% — 팀 내 실제 포지션 확인 필요"}, {"group": "자운", "team": "1M 25KG 도태 말레이곰#볼베냥이 팀", "name": "1M 25KG 도태 말레이곰#볼베냥이", "role": "ADC", "roleLabel": "원딜", "champPool": "아칼리, 빅토르, 자헨, 사일러스, 워윅", "tier": "플래티넘", "peakTier": "플래티넘", "notes": "솔로랭크 플래3 155승146패(51%, 통산 320+게임) / 포지션 미드43%·탑23%·원딜21%(다양)"}, {"group": "자운", "team": "1M 25KG 도태 말레이곰#볼베냥이 팀", "name": "늙고병든지훈#LCS", "role": "TOP", "roleLabel": "탑", "champPool": "오른, 뽀삐, 리산드라, 문도 박사, 쉔", "tier": "플래티넘", "peakTier": "플래티넘", "notes": "솔로랭크 플래1 7승5패(58%, 표본 매우 적음) / 포지션 탑 83%"}, {"group": "자운", "team": "1M 25KG 도태 말레이곰#볼베냥이 팀", "name": "롤대한#KR1", "role": "JGL", "roleLabel": "정글", "champPool": "신 짜오, 암베사, 리 신, 바이, 나피리", "tier": "골드", "peakTier": "골드", "notes": "솔로랭크 골드3 82승74패(53%) / 포지션 정글 99%"}, {"group": "자운", "team": "1M 25KG 도태 말레이곰#볼베냥이 팀", "name": "Tked#KR2", "role": "MID", "roleLabel": "미드", "champPool": "오리아나, 트위스티드 페이트, 빅토르, 라이즈, 제라스", "tier": "그랜드마스터", "peakTier": "챌린저", "notes": "솔로랭크 그마 1710LP(상위 0.014%!, 통산 550게임) / 최고 챌린저 1913LP / 포지션 미드 83% — 지금까지 조사한 60명 중 최고 티어"}, {"group": "자운", "team": "1M 25KG 도태 말레이곰#볼베냥이 팀", "name": "시원한삼다수#KR1", "role": "SUP", "roleLabel": "서폿", "champPool": "렐, 오른, 갱플랭크, 쉔, 브라움", "tier": "골드", "peakTier": "플래티넘", "notes": "솔로랭크 골드2 12승16패(43%) / 포지션 서폿43%·탑39%(투 포지션)"}];
+
+const GROUPS = ['전체','공허','필트오버','자운'];
+const ROLES = [
+  {key:'전체', label:'전체'},
+  {key:'ADC', label:'원딜(팀장)'},
+  {key:'TOP', label:'탑'},
+  {key:'JGL', label:'정글'},
+  {key:'MID', label:'미드'},
+  {key:'SUP', label:'서폿'},
+];
+const ROLE_ORDER_NUM = {ADC:0, TOP:1, JGL:2, MID:3, SUP:4};
+const TIER_RANK = {'':0, '언랭':0, '아이언':1, '브론즈':2, '실버':3, '골드':4, '플래티넘':5, '에메랄드':6, '다이아':7, '마스터':8, '그랜드마스터':9, '챌린저':10};
+const TIER_CLASS = {'':'unranked','아이언':'unranked','브론즈':'unranked','실버':'unranked','골드':'gold','플래티넘':'platinum','에메랄드':'emerald','다이아':'diamond','마스터':'master','그랜드마스터':'gm','챌린저':'challenger'};
+
+function baseTier(raw){ return (raw||'').replace(/\(.*?\)/g,'').trim(); }
+function tierRank(raw){ return TIER_RANK[baseTier(raw)] ?? 0; }
+function tierBadge(raw){
+  const base = baseTier(raw);
+  if(!base) return '<span class="tier-badge tier-unranked"><span class="tier-dot"></span>언랭</span>';
+  const cls = TIER_CLASS[base] || 'unranked';
+  const suffix = raw.includes('(') ? raw.slice(raw.indexOf('(')) : '';
+  return `<span class="tier-badge tier-${cls}"><span class="tier-dot"></span>${base}${suffix?(' '+suffix):''}</span>`;
+}
+
+PLAYERS.forEach(p=>{ p.roleOrder = ROLE_ORDER_NUM[p.role]; p.tierRank = tierRank(p.tier); p.peakRank = tierRank(p.peakTier); });
+
+// 팀 목록 (등장 순서 유지, 팀장=원딜 기준으로 이미 구성되어 있음)
+const TEAMS = [];
+{
+  const seen = new Set();
+  PLAYERS.forEach(p=>{
+    const key = p.group+'|||'+p.team;
+    if(!seen.has(key)){
+      seen.add(key);
+      TEAMS.push({group:p.group, team:p.team, players: PLAYERS.filter(x=>x.group===p.group && x.team===p.team).sort((a,b)=>a.roleOrder-b.roleOrder)});
+    }
+  });
+}
+
+let state = { group:'전체', role:'전체', sortKey:null, sortDir:1, view:'team' };
+
+function renderStats(){
+  const el = document.getElementById('statRow');
+  const total = PLAYERS.length;
+  const masterUp = PLAYERS.filter(p=>p.peakRank>=8).length;
+  const gmUp = PLAYERS.filter(p=>p.peakRank>=9).length;
+  el.innerHTML = `
+    <div class="stat-chip">전체 <b>${total}</b>명</div>
+    <div class="stat-chip">최고 마스터+ <b>${masterUp}</b>명</div>
+    <div class="stat-chip">최고 그랜드마스터+ <b>${gmUp}</b>명</div>
+  `;
+}
+
+function renderChips(){
+  const gEl = document.getElementById('groupChips');
+  GROUPS.forEach(g=>{
+    const b = document.createElement('span');
+    b.className = 'filter-chip';
+    b.textContent = g;
+    b.dataset.group = g;
+    b.onclick = ()=>{ state.group = g; renderView(); };
+    gEl.appendChild(b);
+  });
+  const rEl = document.getElementById('roleChips');
+  ROLES.forEach(r=>{
+    const b = document.createElement('span');
+    b.className = 'filter-chip';
+    b.textContent = r.label;
+    b.dataset.role = r.key;
+    b.onclick = ()=>{ state.role = r.key; renderView(); };
+    rEl.appendChild(b);
+  });
+}
+
+
+document.getElementById('viewTeamBtn').onclick = ()=>{ state.view='team'; renderView(); };
+document.getElementById('viewFlatBtn').onclick = ()=>{ state.view='flat'; renderView(); };
+
+document.querySelectorAll('thead th[data-sort]').forEach(th=>{
+  th.onclick = ()=>{
+    const key = th.dataset.sort;
+    if(state.sortKey===key){ state.sortDir *= -1; } else { state.sortKey = key; state.sortDir = (key==='tierRank'||key==='peakRank') ? -1 : 1; }
+    renderView();
+  };
+});
+
+function matchesFilter(p){
+  if(state.group!=='전체' && p.group!==state.group) return false;
+  return true;
+}
+
+function renderTeamView(){
+  const el = document.getElementById('teamView');
+  const teams = TEAMS.filter(t => state.group==='전체' || t.group===state.group);
+  el.innerHTML = teams.map(t=>{
+    const rows = t.players.map(p=>{
+      const isCaptain = p.role==='ADC';
+      const roleMatch = state.role==='전체' || p.role===state.role;
+      const visible = roleMatch;
+      return `
+        <div class="p-row ${visible?'':'dim'}">
+          <div class="r">${p.roleLabel}</div>
+          <div class="info">
+            <div class="name-line">
+              <span class="pname">${p.name}</span>
+              ${isCaptain?'<span class="captain-badge">팀장</span>':''}
+            </div>
+            <div class="tier-pair">${tierBadge(p.tier)}${tierBadge(p.peakTier)}</div>
+            <div class="champs">${p.champPool}</div>
+            <div class="notes">${p.notes}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    return `
+      <div class="team-card">
+        <h3><span class="group-dot ${t.group}"></span>${t.team}</h3>
+        ${rows}
+      </div>
+    `;
+  }).join('');
+  if(teams.length===0){
+    el.innerHTML = '<div class="empty-msg" style="grid-column:1/-1;">조건에 맞는 팀이 없어요.</div>';
+  }
+}
+
+function renderFlatView(){
+  document.querySelectorAll('thead th[data-sort]').forEach(th=>{
+    th.classList.toggle('sort-active', th.dataset.sort===state.sortKey);
+    const old = th.querySelector('.arrow'); if(old) old.remove();
+    if(th.dataset.sort===state.sortKey){
+      const arrow = document.createElement('span');
+      arrow.className='arrow';
+      arrow.textContent = state.sortDir===1 ? '▲' : '▼';
+      th.appendChild(arrow);
+    }
+  });
+
+  let list = PLAYERS.filter(p=>{
+    if(!matchesFilter(p)) return false;
+    if(state.role!=='전체' && p.role!==state.role) return false;
+    return true;
+  });
+
+  if(state.sortKey){
+    list.sort((a,b)=>{
+      const av=a[state.sortKey], bv=b[state.sortKey];
+      if(typeof av==='string') return av.localeCompare(bv,'ko') * state.sortDir;
+      return (av-bv) * state.sortDir;
+    });
+  } else {
+    list.sort((a,b)=> a.group.localeCompare(b.group,'ko') || a.team.localeCompare(b.team,'ko') || a.roleOrder-b.roleOrder);
+  }
+
+  const tbody = document.getElementById('tbody');
+  const emptyMsg = document.getElementById('emptyMsg');
+  if(list.length===0){
+    tbody.innerHTML = '';
+    emptyMsg.style.display='block';
+    return;
+  }
+  emptyMsg.style.display='none';
+  tbody.innerHTML = list.map(p=>`
+    <tr>
+      <td data-label="그룹"><span class="group-dot ${p.group}"></span>${p.group}</td>
+      <td class="team-cell" data-label="팀">${p.team}</td>
+      <td class="role-cell" data-label="라인">${p.roleLabel}</td>
+      <td class="name-cell" data-label="선수">${p.name}</td>
+      <td data-label="현재 티어">${tierBadge(p.tier)}</td>
+      <td data-label="최고 티어">${tierBadge(p.peakTier)}</td>
+      <td class="champ-cell" data-label="모스트 챔피언">${p.champPool}</td>
+      <td class="notes-cell" data-label="메모">${p.notes}</td>
+    </tr>
+  `).join('');
+}
+
+function renderView(){
+  // 칩/버튼 active 상태 갱신 (재생성 없이 클래스만 토글 — 중복 생성 버그 방지)
+  document.querySelectorAll('#groupChips .filter-chip').forEach(b=>b.classList.toggle('active', b.dataset.group===state.group));
+  document.querySelectorAll('#roleChips .filter-chip').forEach(b=>b.classList.toggle('active', b.dataset.role===state.role));
+  document.getElementById('viewTeamBtn').classList.toggle('active', state.view==='team');
+  document.getElementById('viewFlatBtn').classList.toggle('active', state.view==='flat');
+
+  const teamViewEl = document.getElementById('teamView');
+  const flatViewEl = document.getElementById('flatView');
+  if(state.view==='team'){
+    teamViewEl.style.display='grid';
+    flatViewEl.style.display='none';
+    renderTeamView();
+  } else {
+    teamViewEl.style.display='none';
+    flatViewEl.style.display='block';
+    renderFlatView();
+  }
+}
+
+renderStats();
+renderChips();
+renderView();
+</script>
+</body>
+</html>
